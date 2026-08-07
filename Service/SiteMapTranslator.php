@@ -2,6 +2,7 @@
 
 namespace Linderp\SuluIndexNowBundle\Service;
 use Psr\Log\LoggerInterface;
+
 class SiteMapTranslator
 {
     public function __construct(private LoggerInterface $logger)

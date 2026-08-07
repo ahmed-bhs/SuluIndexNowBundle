@@ -5,15 +5,15 @@ namespace Linderp\SuluIndexNowBundle\Subscriber;
 use Linderp\SuluIndexNowBundle\Service\HostExtractor;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Psr\Log\LoggerInterface;
-use Sulu\Bundle\PageBundle\Document\PageDocument;
-use Sulu\Component\DocumentManager\Event\PersistEvent;
-use Sulu\Component\DocumentManager\Event\PublishEvent;
-use Sulu\Component\DocumentManager\Events;
-use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Sulu\Content\Domain\Model\WorkflowInterface;
+use Sulu\Page\Domain\Event\PageWorkflowTransitionAppliedEvent;
+use Sulu\Page\Domain\Model\PageDimensionContentInterface;
+use Sulu\Route\Application\Routing\Generator\RouteGeneratorInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class PersistPageEventSubscriber implements EventSubscriberInterface
 {
@@ -23,45 +23,53 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
         private IndexNowSubmitter $submitter,
         private HostExtractor $hostExtractor,
         private RequestStack $requestStack,
-        private WebspaceManagerInterface $webspaceManager,
-        #[Autowire('%kernel.environment%')]
-        private string $environment,
+        private RouteGeneratorInterface $routeGenerator,
         private LoggerInterface $logger
     )
     {}
     public static function getSubscribedEvents(): array
     {
-        return [
-            Events::PUBLISH  => 'onPublish',
-        ];
+        return [PageWorkflowTransitionAppliedEvent::class => 'onPublish'];
     }
-    public function onPublish(PublishEvent $event): void
+    public function onPublish(PageWorkflowTransitionAppliedEvent $event): void
     {
-        $document = $event->getDocument();
-        if($document instanceof PageDocument){
-            $extensions =  $document->getExtensionsData();
-            if (($extensions['seo']['noIndex'] ?? false) === true) {
-                return;
-            }
-            $request = $this->requestStack->getCurrentRequest();
-            if (!$request) {
-                // Publishing can happen without an HTTP request (CLI/worker); skip submission.
-                return;
-            }
-            $url = $this->buildUrl(
-                $request,
-                $event->getLocale(),
-                $document->getResourceSegment(),
-                $document->getWebspaceName()
-            );
-            if (!$url) {
-                $this->logger->warning('IndexNow URL resolution failed', [
-                    'locale' => $event->getLocale(),
-                    'resourceSegment' => $document->getResourceSegment(),
-                    'webspace' => $document->getWebspaceName(),
-                ]);
-                return;
-            }
+        if ($event->getWorkflowTransitionName() !== WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH) {
+            return;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request) {
+            return;
+        }
+
+        $page = $event->getPage();
+        $locale = $event->getResourceLocale();
+        $dimensionContent = $page->getDimensionContents()->filter(
+            static fn ($content): bool => $content->getLocale() === $locale,
+        )->first();
+        if (!$dimensionContent instanceof PageDimensionContentInterface) {
+            $this->logger->warning('IndexNow URL resolution failed', [
+                'locale' => $locale,
+                'webspace' => $page->getWebspaceKey(),
+            ]);
+            return;
+        }
+
+        if ($dimensionContent->getSeoNoIndex()) {
+            return;
+        }
+
+        $resourceSegment = $dimensionContent->getRoute()?->getSlug();
+        if (!is_string($resourceSegment) || $resourceSegment === '') {
+            $this->logger->warning('IndexNow URL resolution failed', [
+                'locale' => $locale,
+                'webspace' => $page->getWebspaceKey(),
+            ]);
+            return;
+        }
+
+        $url = $this->buildUrl($request, $locale, $resourceSegment, $page->getWebspaceKey());
+        if ($url) {
             $this->submitter->submit($this->hostExtractor->normalizeHost($request), $this->indexNowKey, [$url]);
         }
     }
@@ -76,13 +84,21 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
             return null;
         }
 
-        return $this->webspaceManager->findUrlByResourceLocator(
-            $resourceSegment,
-            $this->environment,
-            $locale,
-            $webspaceKey,
-            null,
-            $request->getScheme()
-        );
+        try {
+            return $this->routeGenerator->generate(
+                $resourceSegment,
+                $locale,
+                $webspaceKey,
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
+        } catch (\Throwable $exception) {
+            $this->logger->warning('IndexNow URL generation failed', [
+                'locale' => $locale,
+                'webspace' => $webspaceKey,
+                'exception' => $exception,
+            ]);
+
+            return null;
+        }
     }
 }
