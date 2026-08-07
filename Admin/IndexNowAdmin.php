@@ -8,9 +8,9 @@ use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItemCollection;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactoryInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
 use Sulu\Bundle\AdminBundle\Exception\NavigationItemNotFoundException;
-use Sulu\Bundle\PageBundle\Admin\PageAdmin;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
+use Sulu\Page\Infrastructure\Sulu\Admin\PageAdmin;
 
 class IndexNowAdmin extends Admin
 {
@@ -23,8 +23,7 @@ class IndexNowAdmin extends Admin
     public function __construct(
         private readonly ViewBuilderFactoryInterface $viewBuilderFactory,
         private readonly SecurityCheckerInterface $securityChecker
-    ) {
-    }
+    ) {}
 
     /**
      * @throws NavigationItemNotFoundException

@@ -10,4 +10,4 @@ services:
           - '../../Resources/'
     Linderp\SuluIndexNowBundle\Subscriber\PersistPageEventSubscriber:
         tags:
-            - { name: 'sulu_document_manager.event_subscriber' }
+            - { name: 'kernel.event_subscriber' }

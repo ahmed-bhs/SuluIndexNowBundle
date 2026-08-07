@@ -1,12 +1,12 @@
 <?php
 
 namespace Linderp\SuluIndexNowBundle\Service;
+
 use Psr\Log\LoggerInterface;
+
 class SiteMapTranslator
 {
-    public function __construct(private LoggerInterface $logger)
-    {
-    }
+    public function __construct(private LoggerInterface $logger) {}
 
     /**
      * @return array<int, string>
@@ -17,8 +17,8 @@ class SiteMapTranslator
         $context = stream_context_create([
             'http' => [
                 'timeout' => 5,
-                'user_agent' => 'SuluIndexNowBot/1.0'
-            ]
+                'user_agent' => 'SuluIndexNowBot/1.0',
+            ],
         ]);
 
         $xmlContent = @file_get_contents($sitemapUrl, false, $context);
@@ -30,7 +30,7 @@ class SiteMapTranslator
         }
 
         $sitemap = simplexml_load_string($xmlContent);
-        if(!$sitemap) {
+        if (!$sitemap) {
             $this->logger->warning('IndexNow sitemap XML parse failed', [
                 'sitemapUrl' => $sitemapUrl,
             ]);
