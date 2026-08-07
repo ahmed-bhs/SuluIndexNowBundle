@@ -5,7 +5,7 @@ See https://www.indexnow.org/index for details.
 
 ## Installation
 
-This bundle requires PHP 8.2 and Sulu 2.6.
+This bundle requires PHP 8.2 and Sulu 3.0.8 or newer in the 3.0 release line.
 
 1. Open a command console, enter your project directory and run:
 
@@ -26,7 +26,7 @@ return [
 
 ```yaml
 SuluIndexNowBundle:
-    resource: "@SuluIndexNowBundle/Resources/config/routes_admin.yml"
+    resource: "@SuluIndexNowBundle/Resources/config/routes_admin.yaml"
 ```
 
 3. If you don't have the IndexNow setup already, generate your key at https://www.bing.com/indexnow/getstarted. Then follow the instructions and put the key file in the `public/` folder.

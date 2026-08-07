@@ -23,8 +23,7 @@ class IndexNowAdmin extends Admin
     public function __construct(
         private readonly ViewBuilderFactoryInterface $viewBuilderFactory,
         private readonly SecurityCheckerInterface $securityChecker
-    ) {
-    }
+    ) {}
 
     /**
      * @throws NavigationItemNotFoundException

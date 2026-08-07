@@ -1,6 +1,7 @@
 <?php
 
 namespace Linderp\SuluIndexNowBundle\Controller\Admin;
+
 use Linderp\SuluIndexNowBundle\Service\HostExtractor;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Linderp\SuluIndexNowBundle\Service\SiteMapTranslator;
@@ -11,17 +12,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class IndexNowController extends AbstractController{
+class IndexNowController extends AbstractController
+{
     private const SUBMIT_BATCH_SIZE = 1000;
     public function __construct(
         #[Autowire('%sulu_index_now.key%')]
         private readonly string $indexNowKey,
         private readonly IndexNowSubmitter $submitter,
         private readonly SiteMapTranslator $translator,
-        private readonly HostExtractor $hostExtractor){
-    }
+        private readonly HostExtractor $hostExtractor
+    ) {}
     #[Route(path: '/admin/api/index-now/start', name: 'app.index-now.start', methods: ['POST'])]
-    public function indexNow(Request $request): Response{
+    public function indexNow(Request $request): Response
+    {
         $urls = $this->translator->translateUrls($this->getSiteMapUrl($request));
         $batches = array_chunk($urls, self::SUBMIT_BATCH_SIZE);
         $responses = [];
@@ -44,12 +47,13 @@ class IndexNowController extends AbstractController{
         ]);
     }
     #[Route(path: '/admin/api/index-now/urls', name: 'app.index-now.urls', methods: ['GET'])]
-    public function getUrls(Request $request): Response{
-        $urls = $this->translator->translateUrls($this->getSiteMapUrl($request));
-        return new JsonResponse(["urls"=>$urls]);
-    }
-    private function getSiteMapUrl(Request $request):string
+    public function getUrls(Request $request): Response
     {
-        return $request->getSchemeAndHttpHost().'/sitemap.xml';
+        $urls = $this->translator->translateUrls($this->getSiteMapUrl($request));
+        return new JsonResponse(["urls" => $urls]);
+    }
+    private function getSiteMapUrl(Request $request): string
+    {
+        return $request->getSchemeAndHttpHost() . '/sitemap.xml';
     }
 }

@@ -25,8 +25,7 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
         private RequestStack $requestStack,
         private RouteGeneratorInterface $routeGenerator,
         private LoggerInterface $logger
-    )
-    {}
+    ) {}
     public static function getSubscribedEvents(): array
     {
         return [PageWorkflowTransitionAppliedEvent::class => 'onPublish'];
@@ -45,7 +44,7 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
         $page = $event->getPage();
         $locale = $event->getResourceLocale();
         $dimensionContent = $page->getDimensionContents()->filter(
-            static fn ($content): bool => $content->getLocale() === $locale,
+            static fn($content): bool => $content->getLocale() === $locale,
         )->first();
         if (!$dimensionContent instanceof PageDimensionContentInterface) {
             $this->logger->warning('IndexNow URL resolution failed', [
@@ -78,8 +77,7 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
         string $locale,
         string $resourceSegment,
         string $webspaceKey
-    ): ?string
-    {
+    ): ?string {
         if (!$resourceSegment) {
             return null;
         }

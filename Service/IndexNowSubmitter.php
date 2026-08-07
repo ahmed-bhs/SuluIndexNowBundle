@@ -1,6 +1,7 @@
 <?php
 
 namespace Linderp\SuluIndexNowBundle\Service;
+
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpClient\HttpClient;
@@ -19,10 +20,7 @@ readonly class IndexNowSubmitter
         /** @var array<string, string> */
         private array           $endpoints,
         private LoggerInterface $logger,
-    )
-    {
-
-    }
+    ) {}
 
     /**
      * @param array<int, string> $urls
@@ -31,7 +29,7 @@ readonly class IndexNowSubmitter
      */
     public function submit(string $host, string $key, array $urls): array
     {
-        if(empty($urls)) {
+        if (empty($urls)) {
             return [];
         }
         $client = HttpClient::create();
@@ -56,13 +54,13 @@ readonly class IndexNowSubmitter
                     'status' => $response->getStatusCode(),
                     'body'   => $response->getContent(false),
                 ];
-                $this->logger->debug('Index now submitted to: '.$endpoint . ', status: '.$response->getStatusCode());
+                $this->logger->debug('Index now submitted to: ' . $endpoint . ', status: ' . $response->getStatusCode());
             } catch (TransportExceptionInterface|RedirectionExceptionInterface|ClientExceptionInterface|ServerExceptionInterface $e) {
                 $responses[$name] = [
                     'status' => 'error',
                     'body'   => $e->getMessage(),
                 ];
-                $this->logger->error($e->getMessage(),[
+                $this->logger->error($e->getMessage(), [
                     "payload" => $payload,
                     "endpoint" => $endpoint,
                     "name" => $name,
