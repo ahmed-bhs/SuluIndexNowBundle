@@ -8,6 +8,7 @@
         "symfony/config": "^6.2 | ^7.0",
         "symfony/dependency-injection": "^6.2 | ^7.0",
         "symfony/framework-bundle": "^6.2 | ^7.0",
+        "symfony/http-client": "^6.2 | ^7.0",
         "symfony/http-foundation": "^6.2 | ^7.0",
         "symfony/http-kernel": "^6.2 | ^7.0",
         "symfony/intl": "^6.2 | ^7.0",

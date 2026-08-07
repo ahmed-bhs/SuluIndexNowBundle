@@ -13,10 +13,15 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Event\TerminateEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-readonly class PersistPageEventSubscriber implements EventSubscriberInterface
+class PersistPageEventSubscriber implements EventSubscriberInterface
 {
+    /** @var array<string, array{host: string, key: string, urls: array<string>}> */
+    private array $pendingSubmissions = [];
+
     public function __construct(
         #[Autowire('%sulu_index_now.key%')]
         private string $indexNowKey,
@@ -28,7 +33,10 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
     ) {}
     public static function getSubscribedEvents(): array
     {
-        return [PageWorkflowTransitionAppliedEvent::class => 'onPublish'];
+        return [
+            PageWorkflowTransitionAppliedEvent::class => 'onPublish',
+            KernelEvents::TERMINATE => 'onTerminate',
+        ];
     }
     public function onPublish(PageWorkflowTransitionAppliedEvent $event): void
     {
@@ -69,8 +77,28 @@ readonly class PersistPageEventSubscriber implements EventSubscriberInterface
 
         $url = $this->buildUrl($request, $locale, $resourceSegment, $page->getWebspaceKey());
         if ($url) {
-            $this->submitter->submit($this->hostExtractor->normalizeHost($request), $this->indexNowKey, [$url]);
+            $host = $this->hostExtractor->normalizeHost($request);
+            $submissionKey = $host . '|' . $this->indexNowKey;
+            $this->pendingSubmissions[$submissionKey] ??= [
+                'host' => $host,
+                'key' => $this->indexNowKey,
+                'urls' => [],
+            ];
+            $this->pendingSubmissions[$submissionKey]['urls'][] = $url;
         }
+    }
+
+    public function onTerminate(TerminateEvent $event): void
+    {
+        foreach ($this->pendingSubmissions as $submission) {
+            $this->submitter->submit(
+                $submission['host'],
+                $submission['key'],
+                array_values(array_unique($submission['urls'])),
+            );
+        }
+
+        $this->pendingSubmissions = [];
     }
     public function buildUrl(
         Request $request,
