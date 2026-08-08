@@ -2,7 +2,6 @@
 
 namespace Linderp\SuluIndexNowBundle\Controller\Admin;
 
-use Linderp\SuluIndexNowBundle\Service\HostExtractor;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Linderp\SuluIndexNowBundle\Service\SiteMapTranslator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +19,6 @@ class IndexNowController extends AbstractController
         private readonly string $indexNowKey,
         private readonly IndexNowSubmitter $submitter,
         private readonly SiteMapTranslator $translator,
-        private readonly HostExtractor $hostExtractor
     ) {}
     #[Route(path: '/admin/api/index-now/start', name: 'app.index-now.start', methods: ['POST'])]
     public function indexNow(Request $request): Response
@@ -31,7 +29,7 @@ class IndexNowController extends AbstractController
         $submitted = 0;
         foreach ($batches as $index => $batch) {
             $responses[$index] = $this->submitter->submit(
-                $this->hostExtractor->normalizeHost($request),
+                $request->getHost(),
                 $this->indexNowKey,
                 $batch
             );

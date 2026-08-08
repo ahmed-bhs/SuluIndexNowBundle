@@ -2,7 +2,6 @@
 
 namespace Linderp\SuluIndexNowBundle\Subscriber;
 
-use Linderp\SuluIndexNowBundle\Service\HostExtractor;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Psr\Log\LoggerInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
@@ -15,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Routing\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PersistPageEventSubscriber implements EventSubscriberInterface
@@ -26,7 +26,6 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
         #[Autowire('%sulu_index_now.key%')]
         private string $indexNowKey,
         private IndexNowSubmitter $submitter,
-        private HostExtractor $hostExtractor,
         private RequestStack $requestStack,
         private RouteGeneratorInterface $routeGenerator,
         private LoggerInterface $logger
@@ -51,6 +50,10 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
 
         $page = $event->getPage();
         $locale = $event->getResourceLocale();
+        if (null === $locale) {
+            return;
+        }
+
         $dimensionContent = $page->getDimensionContents()->filter(
             static fn($content): bool => $content->getLocale() === $locale,
         )->first();
@@ -77,7 +80,7 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
 
         $url = $this->buildUrl($request, $locale, $resourceSegment, $page->getWebspaceKey());
         if ($url) {
-            $host = $this->hostExtractor->normalizeHost($request);
+            $host = $request->getHost();
             $submissionKey = $host . '|' . $this->indexNowKey;
             $this->pendingSubmissions[$submissionKey] ??= [
                 'host' => $host,
@@ -117,7 +120,7 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
                 $webspaceKey,
                 UrlGeneratorInterface::ABSOLUTE_URL,
             );
-        } catch (\Throwable $exception) {
+        } catch (ExceptionInterface $exception) {
             $this->logger->warning('IndexNow URL generation failed', [
                 'locale' => $locale,
                 'webspace' => $webspaceKey,
