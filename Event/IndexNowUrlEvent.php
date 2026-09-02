@@ -9,8 +9,7 @@ final readonly class IndexNowUrlEvent
     public function __construct(
         private string $url,
         private ?string $host = null,
-    ) {
-    }
+    ) {}
 
     public function getUrl(): string
     {

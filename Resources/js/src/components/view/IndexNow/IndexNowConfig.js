@@ -5,12 +5,17 @@ import {Loader} from "sulu-admin-bundle/components";
 import {withToolbar} from "sulu-admin-bundle/containers";
 import {translate} from "sulu-admin-bundle/utils";
 import {Requester} from "sulu-admin-bundle/services";
-import './indexNowConfig.scss';
+import {SnackbarService} from "sulu-base-bundle";
 
 @observer
 class IndexNowConfig extends React.Component {
     @observable loading = false;
-    @observable data = {urls: [], responses: {}};
+    @observable data = {
+        urls: [],
+        submitted: null,
+        submittedAt: null,
+        summary: null,
+    };
 
     componentDidMount() {
         this.loadUrls().then();
@@ -21,100 +26,125 @@ class IndexNowConfig extends React.Component {
 
         return Requester.get("/admin/api/index-now/urls")
             .then(action((response) => {
-                    this.data.urls = response.urls;
-                })
-            )
+                this.data.urls = Array.isArray(response.urls) ? response.urls : [];
+            }))
             .catch((e) => {
-                console.error("Error while loading usage data from server.", e);
+                console.error("Error while loading IndexNow URLs.", e);
             })
-            .finally(
-                action(() => {
-                    this.loading = false;
-                })
-            );
-    }
+            .finally(action(() => {
+                this.loading = false;
+            }));
+    };
+
     @action indexNow = () => {
         this.loading = true;
 
         return Requester.post("/admin/api/index-now/start")
-            .then(
-                action((response) => {
-                    this.data = response;
-                })
-            )
+            .then(action((response) => {
+                this.data.urls = Array.isArray(response.urls) ? response.urls : this.data.urls;
+                this.data.submitted = response.submitted ?? this.data.urls.length;
+                this.data.submittedAt = response.submittedAt || null;
+                this.data.summary = response.summary || null;
+
+                const summary = this.data.summary;
+                const failedEngines = summary?.failedEngines || 0;
+                const submitted = this.data.submitted;
+
+                SnackbarService.show({
+                    text: failedEngines > 0
+                        ? translate("app.index_now_partial", {count: submitted, failed: failedEngines})
+                        : translate("app.index_now_submitted", {count: submitted}),
+                    type: failedEngines > 0 ? "error" : "success",
+                });
+            }))
             .catch((e) => {
-                console.error("Error while loading usage data from server.", e);
+                console.error("Error while submitting IndexNow URLs.", e);
+                SnackbarService.show({
+                    text: e?.message || translate("app.index_now_submit_error"),
+                    type: "error",
+                });
             })
-            .finally(
-                action(() => {
-                    this.loading = false;
-                })
-            );
+            .finally(action(() => {
+                this.loading = false;
+            }));
+    };
+
+    formatDate = (value) => {
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return new Intl.DateTimeFormat(undefined, {
+            dateStyle: "short",
+            timeStyle: "short",
+        }).format(date);
     };
 
     render() {
-        const {urls, responses} = this.data;
-        const responsesMap = Array.isArray(responses)
-            ? responses.reduce((acc, batch) => Object.assign(acc, batch || {}), {})
-            : (responses || {});
-        const engines = Object.keys(responsesMap);
+        const urlCount = Array.isArray(this.data.urls) ? this.data.urls.length : 0;
+        const summary = this.data.summary;
+        const engines = summary?.engines || [];
+        const totalEngines = (summary?.successfulEngines || 0) + (summary?.failedEngines || 0);
+
         return (
             <div>
-                <h1>{translate("app.index_now_config_headline")}</h1>
-                <p>{translate("app.index_now_config_description")}</p>
-                <div style={{marginTop: 20, marginBottom: 20}}>
-                    <table  className="url-table">
-                        <thead className="bg-gray-100">
-                        <tr>
-                            <th className="px-4 py-2 border">URL</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {urls.map((url) => (
-                            <tr key={url} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border break-all">{url}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-                <div style={{marginTop: 20, marginBottom: 20}}>
-                    {engines.length > 0 && !this.loading && (
-                        <table className="engine-table">
-                            <thead className="engine-table-head">
-                            <tr>
-                                <th>Engine</th>
-                                <th>Status</th>
-                                <th>Response</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {engines.map((engine) => {
-                                const res = responsesMap[engine];
-                                const status = res?.status;
-                                const success = status === 200 || status === 202;
-                                return (
-                                    <tr key={engine} className="engine-table-row">
-                                        <td key={engine}
-                                            className={`engine-table-cell ${success ? "success" : "error"}`}>
-                                            {engine}
-                                        </td>
-                                        <td key={engine + status}
-                                            className={`engine-table-cell ${success ? "success" : "error"}`}>
-                                            {status}
-                                        </td>
-                                        <td key={engine + "body"}
-                                            className={`engine-table-cell ${success ? "success" : "error"}`}>
-                                            {res?.body ? JSON.stringify(res.body) : ""}
-                                        </td>
-                                    </tr>
-                                );
+                <p>{translate("app.index_now_url_count", {count: urlCount})}</p>
+
+                {summary && (
+                    <div>
+                        <p>{translate("app.index_now_submitted", {count: this.data.submitted || 0})}</p>
+                        <p>
+                            {translate("app.index_now_provider_status", {
+                                successful: summary.successfulEngines || 0,
+                                total: totalEngines,
                             })}
-                            </tbody>
-                        </table>
-                    )}
-                    {this.loading && <Loader/>}
-                </div>
+                        </p>
+                        {this.data.submittedAt && (
+                            <p>
+                                {translate("app.index_now_last_run", {
+                                    date: this.formatDate(this.data.submittedAt),
+                                })}
+                            </p>
+                        )}
+
+                        {engines.length > 0 && (
+                            <details>
+                                <summary>{translate("app.index_now_show_details")}</summary>
+                                <ul>
+                                    {engines.map((engine) => (
+                                        <li key={engine.name}>
+                                            <strong>{engine.name}</strong>{": "}
+                                            {translate(
+                                                engine.status === "success"
+                                                    ? "app.index_now_provider_success"
+                                                    : "app.index_now_provider_failed",
+                                            )}
+                                            {engine.totalBatches > 1 && (
+                                                <span>
+                                                    {" ("}
+                                                    {translate("app.index_now_batch_status", {
+                                                        successful: engine.successfulBatches,
+                                                        total: engine.totalBatches,
+                                                    })}
+                                                    {")"}
+                                                </span>
+                                            )}
+                                            {engine.errors.length > 0 && (
+                                                <ul>
+                                                    {engine.errors.map((error) => <li key={error}>{error}</li>)}
+                                                </ul>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </details>
+                        )}
+                    </div>
+                )}
+
+                {this.loading && <Loader/>}
             </div>
         );
     }

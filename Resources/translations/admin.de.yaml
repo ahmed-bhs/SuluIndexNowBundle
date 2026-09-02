@@ -1,4 +1,13 @@
 app:
-    index_now_config_headline: IndexNow Dashboard
-    index_now_config_description: Beschleunigt die Indexierung der Website in Suchmaschinen durch sofortige Benachrichtigung.
     index_now_start: IndexNow starten
+    index_now_config_headline: IndexNow Dashboard
+    index_now_url_count: '{count} URLs gefunden.'
+    index_now_submitted: '{count} URLs wurden an IndexNow übermittelt.'
+    index_now_partial: '{count} URLs übermittelt, {failed} Anbieter fehlgeschlagen.'
+    index_now_provider_status: '{successful} von {total} Anbietern erfolgreich.'
+    index_now_last_run: 'Letzter Lauf: {date}'
+    index_now_show_details: Details anzeigen
+    index_now_provider_success: Erfolgreich
+    index_now_provider_failed: Fehlgeschlagen
+    index_now_batch_status: '{successful} von {total} Batches erfolgreich'
+    index_now_submit_error: IndexNow konnte nicht gestartet werden.
