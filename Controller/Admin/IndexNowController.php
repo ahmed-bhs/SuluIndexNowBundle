@@ -3,7 +3,7 @@
 namespace Linderp\SuluIndexNowBundle\Controller\Admin;
 
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
-use Linderp\SuluIndexNowBundle\Service\SiteMapTranslator;
+use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapProviderPoolInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,12 +18,12 @@ class IndexNowController extends AbstractController
         #[Autowire('%sulu_index_now.key%')]
         private readonly string $indexNowKey,
         private readonly IndexNowSubmitter $submitter,
-        private readonly SiteMapTranslator $translator,
+        private readonly SitemapProviderPoolInterface $sitemapProviderPool,
     ) {}
     #[Route(path: '/admin/api/index-now/start', name: 'app.index-now.start', methods: ['POST'])]
     public function indexNow(Request $request): Response
     {
-        $urls = $this->translator->translateUrls($this->getSiteMapUrl($request));
+        $urls = $this->getSiteMapUrls($request);
         $batches = array_chunk($urls, self::SUBMIT_BATCH_SIZE);
         $responses = [];
         $submitted = 0;
@@ -51,12 +51,33 @@ class IndexNowController extends AbstractController
     #[Route(path: '/admin/api/index-now/urls', name: 'app.index-now.urls', methods: ['GET'])]
     public function getUrls(Request $request): Response
     {
-        $urls = $this->translator->translateUrls($this->getSiteMapUrl($request));
+        $urls = $this->getSiteMapUrls($request);
         return new JsonResponse(["urls" => $urls]);
     }
-    private function getSiteMapUrl(Request $request): string
+
+    /**
+     * @return array<int, string>
+     */
+    private function getSiteMapUrls(Request $request): array
     {
-        return $request->getSchemeAndHttpHost() . '/sitemap.xml';
+        $scheme = $request->getScheme();
+        $host = $request->getHost();
+        $urls = [];
+
+        foreach ($this->sitemapProviderPool->getIndex($scheme, $host) as $sitemap) {
+            $provider = $this->sitemapProviderPool->getProvider($sitemap->getAlias());
+
+            for ($page = 1; $page <= $sitemap->getMaxPage(); ++$page) {
+                foreach ($provider->build($page, $scheme, $host) as $sitemapUrl) {
+                    $loc = trim($sitemapUrl->getLoc());
+                    if ($loc !== '') {
+                        $urls[] = $loc;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($urls));
     }
 
     /**

@@ -11,3 +11,6 @@ services:
     Linderp\SuluIndexNowBundle\Subscriber\PersistPageEventSubscriber:
         tags:
             - { name: 'kernel.event_subscriber' }
+
+    Sulu\Bundle\WebsiteBundle\Sitemap\SitemapProviderPoolInterface:
+        alias: sulu_website.sitemap.pool

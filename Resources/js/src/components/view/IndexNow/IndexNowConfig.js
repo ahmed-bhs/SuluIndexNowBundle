@@ -83,7 +83,7 @@ class IndexNowConfig extends React.Component {
     };
 
     render() {
-        const urlCount = Array.isArray(this.data.urls) ? this.data.urls.length : 0;
+        const urlCount = this.data.urls?.length || 0;
         const summary = this.data.summary;
         const engines = summary?.engines || [];
         const totalEngines = (summary?.successfulEngines || 0) + (summary?.failedEngines || 0);
