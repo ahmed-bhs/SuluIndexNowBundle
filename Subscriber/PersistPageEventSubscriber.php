@@ -2,6 +2,7 @@
 
 namespace Linderp\SuluIndexNowBundle\Subscriber;
 
+use Linderp\SuluIndexNowBundle\Event\IndexNowUrlEvent;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Psr\Log\LoggerInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
@@ -34,8 +35,14 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
     {
         return [
             PageWorkflowTransitionAppliedEvent::class => 'onPublish',
+            IndexNowUrlEvent::class => 'onIndexNowUrl',
             KernelEvents::TERMINATE => 'onTerminate',
         ];
+    }
+
+    public function onIndexNowUrl(IndexNowUrlEvent $event): void
+    {
+        $this->queueUrl($event->getUrl(), $event->getHost());
     }
     public function onPublish(PageWorkflowTransitionAppliedEvent $event): void
     {
@@ -80,15 +87,24 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
 
         $url = $this->buildUrl($request, $locale, $resourceSegment, $page->getWebspaceKey());
         if ($url) {
-            $host = $request->getHost();
-            $submissionKey = $host . '|' . $this->indexNowKey;
-            $this->pendingSubmissions[$submissionKey] ??= [
-                'host' => $host,
-                'key' => $this->indexNowKey,
-                'urls' => [],
-            ];
-            $this->pendingSubmissions[$submissionKey]['urls'][] = $url;
+            $this->queueUrl($url, $request->getHost());
         }
+    }
+
+    private function queueUrl(string $url, ?string $host = null): void
+    {
+        $host ??= parse_url($url, PHP_URL_HOST);
+        if (!\is_string($host) || '' === $host) {
+            return;
+        }
+
+        $submissionKey = $host . '|' . $this->indexNowKey;
+        $this->pendingSubmissions[$submissionKey] ??= [
+            'host' => $host,
+            'key' => $this->indexNowKey,
+            'urls' => [],
+        ];
+        $this->pendingSubmissions[$submissionKey]['urls'][] = $url;
     }
 
     public function onTerminate(TerminateEvent $event): void
