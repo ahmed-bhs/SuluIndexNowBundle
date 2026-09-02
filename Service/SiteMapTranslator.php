@@ -13,6 +13,24 @@ class SiteMapTranslator
      */
     public function translateUrls(string $sitemapUrl): array
     {
+        $visitedSitemaps = [];
+
+        return array_values(array_unique($this->translateSitemap($sitemapUrl, $visitedSitemaps)));
+    }
+
+    /**
+     * @param array<string, true> $visitedSitemaps
+     *
+     * @return array<int, string>
+     */
+    private function translateSitemap(string $sitemapUrl, array &$visitedSitemaps): array
+    {
+        if (isset($visitedSitemaps[$sitemapUrl])) {
+            return [];
+        }
+
+        $visitedSitemaps[$sitemapUrl] = true;
+
         // Load remote XML (with error handling)
         $context = stream_context_create([
             'http' => [
@@ -36,9 +54,33 @@ class SiteMapTranslator
             ]);
             return [];
         }
+
+        $namespace = $sitemap->getDocNamespaces(true)[''] ?? null;
+        $entries = null !== $namespace
+            ? $sitemap->children($namespace)
+            : $sitemap;
+
+        if ($sitemap->getName() === 'sitemapindex') {
+            $urls = [];
+
+            foreach ($entries->sitemap as $entry) {
+                $childSitemapUrl = trim((string) $entry->loc);
+                if ($childSitemapUrl === '') {
+                    continue;
+                }
+
+                $urls = array_merge(
+                    $urls,
+                    $this->translateSitemap($childSitemapUrl, $visitedSitemaps),
+                );
+            }
+
+            return $urls;
+        }
+
         $urls = [];
-        foreach ($sitemap->url as $entry) {
-            $loc = (string) $entry->loc;
+        foreach ($entries->url as $entry) {
+            $loc = trim((string) $entry->loc);
             if ($loc === '') {
                 continue;
             }

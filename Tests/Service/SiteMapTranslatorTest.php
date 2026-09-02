@@ -29,6 +29,35 @@ final class SiteMapTranslatorTest extends TestCase
         ], (new SiteMapTranslator(new NullLogger()))->translateUrls($url));
     }
 
+    public function testItFollowsSitemapIndexesAndDeduplicatesLocations(): void
+    {
+        $childXml = <<<'XML'
+            <?xml version="1.0" encoding="UTF-8"?>
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                <url><loc>https://example.com/de/one</loc></url>
+                <url><loc>https://example.com/de/two</loc></url>
+            </urlset>
+            XML;
+        $childUrl = 'data://text/plain;base64,' . base64_encode($childXml);
+        $indexXml = sprintf(
+            <<<'XML'
+                <?xml version="1.0" encoding="UTF-8"?>
+                <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                    <sitemap><loc>%s</loc></sitemap>
+                    <sitemap><loc>%s</loc></sitemap>
+                </sitemapindex>
+                XML,
+            $childUrl,
+            $childUrl,
+        );
+        $indexUrl = 'data://text/plain;base64,' . base64_encode($indexXml);
+
+        self::assertSame([
+            'https://example.com/de/one',
+            'https://example.com/de/two',
+        ], (new SiteMapTranslator(new NullLogger()))->translateUrls($indexUrl));
+    }
+
     public function testItLogsAndReturnsNoUrlsForInvalidXml(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
