@@ -85,6 +85,8 @@ required. If you do not use migrations, `doctrine:schema:update --force` works t
 The dashboard reports on the **current host** only, so a multi-webspace project
 sees the figures of the domain it is opened from.
 
+![Sulu IndexNow administration interface](docs/images/sulu-index-now-admin-interface.png)
+
 **Summary cards**
 
 | Card | Meaning |
