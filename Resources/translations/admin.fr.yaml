@@ -1,0 +1,42 @@
+app:
+    index_now_start: Prévenir les moteurs
+    index_now_refresh: Actualiser
+    index_now_config_headline: IndexNow
+    index_now_submitted: '{count, plural, one {# adresse transmise aux moteurs.} other {# adresses transmises aux moteurs.}}'
+    index_now_partial: '{count} adresses transmises, {failed} moteurs en échec.'
+    index_now_submit_error: L'envoi aux moteurs n'a pas pu démarrer.
+    index_now_load_error: Les données IndexNow n'ont pas pu être chargées.
+    index_now_card_urls: Adresses dans le sitemap
+    index_now_card_urls_hint: Transmises au prochain envoi
+    index_now_card_last_success: Dernier envoi réussi
+    index_now_card_last_run: Dernier envoi
+    index_now_never: Jamais
+    index_now_trigger_manual: Manuel
+    index_now_trigger_automatic: Automatique
+    index_now_status_success: Réussi
+    index_now_status_partial: Partiellement réussi
+    index_now_status_error: Échec
+    index_now_history_headline: Historique des envois
+    index_now_history_empty: Aucun envoi enregistré pour le moment.
+    index_now_column_date: Date
+    index_now_column_trigger: Déclencheur
+    index_now_column_status: Statut
+    index_now_column_urls: Adresses
+    index_now_column_engines: Moteurs
+    index_now_never_hint: Aucun envoi enregistré pour le moment
+    index_now_history_description: Tous les envois manuels et automatiques, du plus récent au plus ancien.
+    index_now_card_health: Taux de réussite
+    index_now_health_detail: '{successful} envois réussis sur {total}'
+    index_now_average_duration: 'Durée moyenne : {duration}'
+    index_now_duration_ms: '{duration} ms'
+    index_now_duration_s: '{duration} s'
+    index_now_alert_stale: 'Le dernier envoi réussi date de {days} jours.'
+    index_now_alert_never_succeeded: "Aucun envoi n'a jamais abouti."
+    index_now_alert_last_run_failed: "Le dernier envoi n'a pas atteint tous les moteurs."
+    index_now_alert_hint: Les moteurs ignorent peut-être vos dernières modifications.
+    index_now_filter_all: Tous
+    index_now_result_count: '{count, plural, one {# envoi} other {# envois}}'
+    index_now_previous: Précédent
+    index_now_next: Suivant
+    index_now_page_status: 'Page {page} sur {pages}'
+    index_now_batch_status: '{successful} lots sur {total} transmis'

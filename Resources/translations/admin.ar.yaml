@@ -1,0 +1,42 @@
+app:
+    index_now_start: تشغيل IndexNow
+    index_now_refresh: تحديث
+    index_now_config_headline: لوحة معلومات IndexNow
+    index_now_submitted: '{count, plural, zero {لم يتم إرسال أي عنوان URL إلى IndexNow.} one {تم إرسال عنوان URL واحد إلى IndexNow.} two {تم إرسال عنواني URL إلى IndexNow.} few {تم إرسال # عناوين URL إلى IndexNow.} many {تم إرسال # عنوان URL إلى IndexNow.} other {تم إرسال # عنوان URL إلى IndexNow.}}'
+    index_now_partial: 'تم إرسال {count} من عناوين URL، وفشل {failed} من مزودي الخدمة.'
+    index_now_submit_error: تعذر تشغيل IndexNow.
+    index_now_load_error: تعذر تحميل بيانات IndexNow.
+    index_now_card_urls: عناوين URL في خريطة الموقع
+    index_now_card_urls_hint: سيتم إرسالها في التشغيل التالي
+    index_now_card_last_success: آخر إرسال ناجح
+    index_now_card_last_run: آخر تشغيل
+    index_now_never: أبدًا
+    index_now_trigger_manual: يدوي
+    index_now_trigger_automatic: تلقائي
+    index_now_status_success: ناجح
+    index_now_status_partial: ناجح جزئيًا
+    index_now_status_error: فشل
+    index_now_history_headline: سجل عمليات الإرسال
+    index_now_history_empty: لم يتم تسجيل أي عملية إرسال بعد.
+    index_now_column_date: التاريخ
+    index_now_column_trigger: المشغّل
+    index_now_column_status: الحالة
+    index_now_column_urls: عناوين URL
+    index_now_column_engines: محركات البحث
+    index_now_never_hint: لم يتم تسجيل أي عملية إرسال بعد
+    index_now_history_description: جميع عمليات الإرسال اليدوية والتلقائية، الأحدث أولًا.
+    index_now_card_health: معدل النجاح
+    index_now_health_detail: '{successful} عمليات ناجحة من أصل {total}'
+    index_now_average_duration: 'متوسط المدة: {duration}'
+    index_now_duration_ms: '{duration} مللي ثانية'
+    index_now_duration_s: '{duration} ث'
+    index_now_alert_stale: 'تم آخر إرسال ناجح قبل {days} يومًا.'
+    index_now_alert_never_succeeded: لم تنجح أي عملية إرسال حتى الآن.
+    index_now_alert_last_run_failed: لم يصل آخر تشغيل إلى جميع محركات البحث.
+    index_now_alert_hint: قد لا تكون محركات البحث على علم بأحدث تغييراتك.
+    index_now_filter_all: الكل
+    index_now_result_count: '{count, plural, zero {لا توجد عمليات تشغيل} one {عملية تشغيل واحدة} two {عمليتا تشغيل} few {# عمليات تشغيل} many {# عملية تشغيل} other {# عملية تشغيل}}'
+    index_now_previous: السابق
+    index_now_next: التالي
+    index_now_page_status: 'الصفحة {page} من {pages}'
+    index_now_batch_status: 'نجحت {successful} من أصل {total} دفعات'

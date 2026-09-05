@@ -1,13 +1,42 @@
 app:
     index_now_start: Start IndexNow
+    index_now_refresh: Refresh
     index_now_config_headline: IndexNow Dashboard
-    index_now_url_count: '{count} URLs found.'
-    index_now_submitted: '{count} URLs submitted to IndexNow.'
+    index_now_submitted: '{count, plural, one {# URL submitted to IndexNow.} other {# URLs submitted to IndexNow.}}'
     index_now_partial: '{count} URLs submitted, {failed} providers failed.'
-    index_now_provider_status: '{successful} of {total} providers successful.'
-    index_now_last_run: 'Last run: {date}'
-    index_now_show_details: Show details
-    index_now_provider_success: Successful
-    index_now_provider_failed: Failed
-    index_now_batch_status: '{successful} of {total} batches successful'
     index_now_submit_error: IndexNow could not be started.
+    index_now_load_error: IndexNow data could not be loaded.
+    index_now_card_urls: URLs in sitemap
+    index_now_card_urls_hint: Submitted on the next run
+    index_now_card_last_success: Last successful submission
+    index_now_card_last_run: Last run
+    index_now_never: Never
+    index_now_trigger_manual: Manual
+    index_now_trigger_automatic: Automatic
+    index_now_status_success: Successful
+    index_now_status_partial: Partially successful
+    index_now_status_error: Failed
+    index_now_history_headline: Submission history
+    index_now_history_empty: No submission recorded yet.
+    index_now_column_date: Date
+    index_now_column_trigger: Trigger
+    index_now_column_status: Status
+    index_now_column_urls: URLs
+    index_now_column_engines: Search engines
+    index_now_never_hint: No submission recorded yet
+    index_now_history_description: Every manual and automatic submission, most recent first.
+    index_now_card_health: Success rate
+    index_now_health_detail: '{successful} of {total} runs successful'
+    index_now_average_duration: 'Average duration: {duration}'
+    index_now_duration_ms: '{duration} ms'
+    index_now_duration_s: '{duration} s'
+    index_now_alert_stale: 'The last successful submission was {days} days ago.'
+    index_now_alert_never_succeeded: No submission has ever succeeded.
+    index_now_alert_last_run_failed: The last run did not reach every search engine.
+    index_now_alert_hint: Search engines may not know about your latest changes.
+    index_now_filter_all: All
+    index_now_result_count: '{count, plural, one {# run} other {# runs}}'
+    index_now_previous: Previous
+    index_now_next: Next
+    index_now_page_status: 'Page {page} of {pages}'
+    index_now_batch_status: '{successful} of {total} batches successful'

@@ -8,9 +8,17 @@ services:
         resource: '../../'
         exclude:
           - '../../Resources/'
+          - '../../Entity/'
+          - '../../Event/'
+          - '../../Tests/'
+          - '../../vendor/'
     Linderp\SuluIndexNowBundle\Subscriber\PersistPageEventSubscriber:
         tags:
             - { name: 'kernel.event_subscriber' }
+
+    Linderp\SuluIndexNowBundle\Repository\IndexNowSubmissionRepository:
+        tags:
+            - { name: 'doctrine.repository_service' }
 
     Sulu\Bundle\WebsiteBundle\Sitemap\SitemapProviderPoolInterface:
         alias: sulu_website.sitemap.pool

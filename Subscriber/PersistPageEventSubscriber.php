@@ -2,7 +2,9 @@
 
 namespace Linderp\SuluIndexNowBundle\Subscriber;
 
+use Linderp\SuluIndexNowBundle\Entity\IndexNowSubmission;
 use Linderp\SuluIndexNowBundle\Event\IndexNowUrlEvent;
+use Linderp\SuluIndexNowBundle\Service\IndexNowRunRecorder;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Psr\Log\LoggerInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
@@ -20,7 +22,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PersistPageEventSubscriber implements EventSubscriberInterface
 {
-    /** @var array<string, array{host: string, key: string, urls: array<string>}> */
+    private const SUBMIT_BATCH_SIZE = 1000;
+
+    /** @var array<string, array{host: string, key: string, urls: array<string>, sources: array<string, true>}> */
     private array $pendingSubmissions = [];
 
     public function __construct(
@@ -29,6 +33,7 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
         private IndexNowSubmitter $submitter,
         private RequestStack $requestStack,
         private RouteGeneratorInterface $routeGenerator,
+        private IndexNowRunRecorder $recorder,
         private LoggerInterface $logger
     ) {}
     public static function getSubscribedEvents(): array
@@ -42,7 +47,7 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
 
     public function onIndexNowUrl(IndexNowUrlEvent $event): void
     {
-        $this->queueUrl($event->getUrl(), $event->getHost());
+        $this->queueUrl($event->getUrl(), $event->getHost(), 'event');
     }
     public function onPublish(PageWorkflowTransitionAppliedEvent $event): void
     {
@@ -87,11 +92,11 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
 
         $url = $this->buildUrl($request, $locale, $resourceSegment, $page->getWebspaceKey());
         if ($url) {
-            $this->queueUrl($url, $request->getHost());
+            $this->queueUrl($url, $request->getHost(), 'page_publish');
         }
     }
 
-    private function queueUrl(string $url, ?string $host = null): void
+    private function queueUrl(string $url, ?string $host = null, string $source = 'event'): void
     {
         $host ??= parse_url($url, PHP_URL_HOST);
         if (!\is_string($host) || '' === $host) {
@@ -103,21 +108,39 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
             'host' => $host,
             'key' => $this->indexNowKey,
             'urls' => [],
+            'sources' => [],
         ];
         $this->pendingSubmissions[$submissionKey]['urls'][] = $url;
+        $this->pendingSubmissions[$submissionKey]['sources'][$source] = true;
     }
 
     public function onTerminate(TerminateEvent $event): void
     {
-        foreach ($this->pendingSubmissions as $submission) {
-            $this->submitter->submit(
+        $pendingSubmissions = $this->pendingSubmissions;
+        $this->pendingSubmissions = [];
+
+        foreach ($pendingSubmissions as $submission) {
+            $urls = array_values(array_unique($submission['urls']));
+            $responses = [];
+            $startedAt = microtime(true);
+
+            foreach (array_chunk($urls, self::SUBMIT_BATCH_SIZE) as $index => $batch) {
+                $responses[$index] = $this->submitter->submit(
+                    $submission['host'],
+                    $submission['key'],
+                    $batch,
+                );
+            }
+
+            $this->recorder->record(
+                $this->recorder->createSummary($responses),
+                IndexNowSubmission::TRIGGER_AUTOMATIC,
+                implode(',', array_keys($submission['sources'])),
                 $submission['host'],
-                $submission['key'],
-                array_values(array_unique($submission['urls'])),
+                count($urls),
+                (int) round((microtime(true) - $startedAt) * 1000),
             );
         }
-
-        $this->pendingSubmissions = [];
     }
     public function buildUrl(
         Request $request,
