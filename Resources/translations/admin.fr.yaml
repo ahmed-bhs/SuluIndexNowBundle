@@ -1,0 +1,28 @@
+app:
+    index_now_start: Prévenir les moteurs
+    index_now_refresh: Actualiser
+    index_now_config_headline: IndexNow
+    index_now_submitted: '{count, plural, one {# adresse transmise aux moteurs.} other {# adresses transmises aux moteurs.}}'
+    index_now_partial: '{count} adresses transmises, {failed} moteurs en échec.'
+    index_now_provider_status: '{successful} moteurs sur {total} ont répondu.'
+    index_now_submit_error: L'envoi aux moteurs n'a pas pu démarrer.
+    index_now_load_error: Les données IndexNow n'ont pas pu être chargées.
+    index_now_card_urls: Adresses dans le sitemap
+    index_now_card_urls_hint: Transmises au prochain envoi
+    index_now_card_last_success: Dernier envoi réussi
+    index_now_card_last_run: Dernier envoi
+    index_now_never: Jamais
+    index_now_trigger_manual: Manuel
+    index_now_trigger_automatic: Automatique
+    index_now_status_success: Réussi
+    index_now_status_partial: Partiellement réussi
+    index_now_status_error: Échec
+    index_now_history_headline: Historique des envois
+    index_now_history_empty: Aucun envoi enregistré pour le moment.
+    index_now_column_date: Date
+    index_now_column_trigger: Déclencheur
+    index_now_column_status: Statut
+    index_now_column_urls: Adresses
+    index_now_column_engines: Moteurs
+    index_now_never_hint: Aucun envoi enregistré pour le moment
+    index_now_history_description: Tous les envois manuels et automatiques, du plus récent au plus ancien.

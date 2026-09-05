@@ -64,7 +64,39 @@ cd assets/admin
 npm run build
 ```
 
+8. Create the table that stores the submission history:
+
+```console
+php bin/console doctrine:migrations:diff
+php bin/console doctrine:migrations:migrate
+```
+
+The bundle registers its own Doctrine mapping, so no additional configuration is
+required. If you do not use migrations, `doctrine:schema:update --force` works too.
+
 ## Usage
 
 - The admin UI is available under **Settings → Index Now**.
 - Publishing a page triggers IndexNow submission automatically (unless `seo.noIndex` is enabled).
+
+### Dashboard
+
+The dashboard shows, for the current host:
+
+- the number of URLs currently in the sitemap,
+- the date of the last **successful** submission (all search engines accepted it),
+- the date and status of the last run, whichever its outcome,
+- whether each run was triggered **manually** from the admin or **automatically** by a publish,
+- a history of the last 20 runs, with the per-engine result of each one.
+
+Every run is recorded, whether it was started from the admin interface or by
+publishing a page, so the history survives a page reload.
+
+### Translations
+
+The bundle ships English, German and French admin translations.
+
+Keys defined in your project's `translations/admin.<locale>.json` take precedence
+over the bundle ones. If the dashboard shows outdated or partially translated
+labels, remove the `app.index_now_*` keys from that file so the bundle values are
+used.

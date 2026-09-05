@@ -1,13 +1,28 @@
 app:
     index_now_start: IndexNow starten
+    index_now_refresh: Aktualisieren
     index_now_config_headline: IndexNow Dashboard
-    index_now_url_count: '{count} URLs gefunden.'
-    index_now_submitted: '{count} URLs wurden an IndexNow übermittelt.'
+    index_now_submitted: '{count, plural, one {# URL wurde an IndexNow übermittelt.} other {# URLs wurden an IndexNow übermittelt.}}'
     index_now_partial: '{count} URLs übermittelt, {failed} Anbieter fehlgeschlagen.'
     index_now_provider_status: '{successful} von {total} Anbietern erfolgreich.'
-    index_now_last_run: 'Letzter Lauf: {date}'
-    index_now_show_details: Details anzeigen
-    index_now_provider_success: Erfolgreich
-    index_now_provider_failed: Fehlgeschlagen
-    index_now_batch_status: '{successful} von {total} Batches erfolgreich'
     index_now_submit_error: IndexNow konnte nicht gestartet werden.
+    index_now_load_error: IndexNow Daten konnten nicht geladen werden.
+    index_now_card_urls: URLs in der Sitemap
+    index_now_card_urls_hint: Werden beim nächsten Lauf übermittelt
+    index_now_card_last_success: Letzte erfolgreiche Übermittlung
+    index_now_card_last_run: Letzter Lauf
+    index_now_never: Nie
+    index_now_trigger_manual: Manuell
+    index_now_trigger_automatic: Automatisch
+    index_now_status_success: Erfolgreich
+    index_now_status_partial: Teilweise erfolgreich
+    index_now_status_error: Fehlgeschlagen
+    index_now_history_headline: Verlauf der Übermittlungen
+    index_now_history_empty: Noch keine Übermittlung aufgezeichnet.
+    index_now_column_date: Datum
+    index_now_column_trigger: Auslöser
+    index_now_column_status: Status
+    index_now_column_urls: URLs
+    index_now_column_engines: Suchmaschinen
+    index_now_never_hint: Noch keine Übermittlung aufgezeichnet
+    index_now_history_description: Alle manuellen und automatischen Übermittlungen, neueste zuerst.

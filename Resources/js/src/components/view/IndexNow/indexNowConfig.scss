@@ -1,0 +1,111 @@
+@import 'sulu-admin-bundle/containers/Application/colors.scss';
+
+.container {
+    padding: 20px;
+}
+
+.section {
+    margin-bottom: 30px;
+
+    & > *:first-child {
+        margin-bottom: 12px;
+    }
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: $white;
+    border: 1px solid $alto;
+    border-radius: 4px;
+    flex: 1 1 220px;
+    min-width: 220px;
+    padding: 16px 20px;
+}
+
+.cardLabel {
+    color: $gray;
+    font-size: 12px;
+    letter-spacing: .5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.cardValue {
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+.cardMeta {
+    color: $doveGray;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.status {
+    align-items: center;
+    display: inline-flex;
+    font-size: 13px;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.statusSuccess {
+    color: $mantis;
+}
+
+.statusPartial {
+    color: $gold;
+}
+
+.statusError {
+    color: $persianRed;
+}
+
+.trigger {
+    border-radius: 3px;
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .3px;
+    padding: 2px 8px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.triggerManual {
+    background: $gallery;
+    color: $mineShaft;
+}
+
+.triggerAutomatic {
+    background: $shakespeare;
+    color: $white;
+}
+
+.errors {
+    color: $persianRed;
+    font-size: 12px;
+    margin: 0;
+    padding-left: 16px;
+}
+
+.engineName {
+    color: $scorpion;
+    font-size: 13px;
+}
+
+.relative {
+    color: $dustyGray;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.loader {
+    padding: 40px 0;
+}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Linderp\SuluIndexNowBundle\Entity\IndexNowSubmission"
+            table="inw_submission"
+            repository-class="Linderp\SuluIndexNowBundle\Repository\IndexNowSubmissionRepository">
+
+        <indexes>
+            <index name="idx_inw_submitted_at" columns="submittedAt"/>
+            <index name="idx_inw_status" columns="status"/>
+        </indexes>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="submittedAt" type="datetime_immutable" column="submittedAt" nullable="false"/>
+        <field name="trigger" type="string" column="`trigger`" length="16" nullable="false"/>
+        <field name="source" type="string" column="source" length="32" nullable="false"/>
+        <field name="host" type="string" column="host" length="255" nullable="false"/>
+        <field name="urlCount" type="integer" column="urlCount" nullable="false"/>
+        <field name="status" type="string" column="status" length="16" nullable="false"/>
+        <field name="successfulEngines" type="integer" column="successfulEngines" nullable="false"/>
+        <field name="failedEngines" type="integer" column="failedEngines" nullable="false"/>
+        <field name="engines" type="json" column="engines" nullable="false"/>
+    </entity>
+</doctrine-mapping>

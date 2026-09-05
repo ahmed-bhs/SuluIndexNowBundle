@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Linderp\SuluIndexNowBundle\Tests\Subscriber;
 
 use Linderp\SuluIndexNowBundle\Event\IndexNowUrlEvent;
+use Linderp\SuluIndexNowBundle\Repository\IndexNowSubmissionRepository;
+use Linderp\SuluIndexNowBundle\Service\IndexNowRunRecorder;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Linderp\SuluIndexNowBundle\Subscriber\PersistPageEventSubscriber;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +40,10 @@ final class PersistPageEventSubscriberTest extends TestCase
             $submitter,
             new RequestStack(),
             $this->createMock(RouteGeneratorInterface::class),
+            new IndexNowRunRecorder(
+                $this->createMock(IndexNowSubmissionRepository::class),
+                new NullLogger(),
+            ),
             new NullLogger(),
         );
 

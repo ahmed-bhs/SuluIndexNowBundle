@@ -2,6 +2,9 @@
 
 namespace Linderp\SuluIndexNowBundle\Controller\Admin;
 
+use Linderp\SuluIndexNowBundle\Entity\IndexNowSubmission;
+use Linderp\SuluIndexNowBundle\Repository\IndexNowSubmissionRepository;
+use Linderp\SuluIndexNowBundle\Service\IndexNowRunRecorder;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapProviderPoolInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,29 +17,42 @@ use Symfony\Component\Routing\Attribute\Route;
 class IndexNowController extends AbstractController
 {
     private const SUBMIT_BATCH_SIZE = 1000;
+    private const HISTORY_LIMIT = 20;
+
     public function __construct(
         #[Autowire('%sulu_index_now.key%')]
         private readonly string $indexNowKey,
         private readonly IndexNowSubmitter $submitter,
         private readonly SitemapProviderPoolInterface $sitemapProviderPool,
+        private readonly IndexNowRunRecorder $recorder,
+        private readonly IndexNowSubmissionRepository $submissionRepository,
     ) {}
+
     #[Route(path: '/admin/api/index-now/start', name: 'app.index-now.start', methods: ['POST'])]
     public function indexNow(Request $request): Response
     {
+        $host = $request->getHost();
         $urls = $this->getSiteMapUrls($request);
         $batches = array_chunk($urls, self::SUBMIT_BATCH_SIZE);
         $responses = [];
         $submitted = 0;
         foreach ($batches as $index => $batch) {
             $responses[$index] = $this->submitter->submit(
-                $request->getHost(),
+                $host,
                 $this->indexNowKey,
                 $batch
             );
             $submitted += count($batch);
         }
 
-        $summary = $this->createSubmissionSummary($responses);
+        $summary = $this->recorder->createSummary($responses);
+        $submission = $this->recorder->record(
+            $summary,
+            IndexNowSubmission::TRIGGER_MANUAL,
+            'admin',
+            $host,
+            $submitted,
+        );
 
         return new JsonResponse([
             "responses" => $responses,
@@ -44,15 +60,58 @@ class IndexNowController extends AbstractController
             "submitted" => $submitted,
             "batchSize" => self::SUBMIT_BATCH_SIZE,
             "batchCount" => count($batches),
-            "submittedAt" => (new \DateTimeImmutable())->format(\DATE_ATOM),
+            "submittedAt" => ($submission?->getSubmittedAt() ?? new \DateTimeImmutable())->format(\DATE_ATOM),
             "summary" => $summary,
+            "lastRun" => $this->findLastRun($host),
+            "lastSuccess" => $this->findLastSuccess($host),
+            "history" => $this->findHistory($host),
         ]);
     }
+
     #[Route(path: '/admin/api/index-now/urls', name: 'app.index-now.urls', methods: ['GET'])]
     public function getUrls(Request $request): Response
     {
         $urls = $this->getSiteMapUrls($request);
         return new JsonResponse(["urls" => $urls]);
+    }
+
+    #[Route(path: '/admin/api/index-now/status', name: 'app.index-now.status', methods: ['GET'])]
+    public function getStatus(Request $request): Response
+    {
+        $host = $request->getHost();
+
+        return new JsonResponse([
+            "lastRun" => $this->findLastRun($host),
+            "lastSuccess" => $this->findLastSuccess($host),
+            "history" => $this->findHistory($host),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findLastRun(string $host): ?array
+    {
+        return $this->submissionRepository->findLast($host)?->toArray();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findLastSuccess(string $host): ?array
+    {
+        return $this->submissionRepository->findLastSuccessful($host)?->toArray();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function findHistory(string $host): array
+    {
+        return array_map(
+            static fn(IndexNowSubmission $submission): array => $submission->toArray(),
+            $this->submissionRepository->findHistory($host, self::HISTORY_LIMIT),
+        );
     }
 
     /**
@@ -78,66 +137,5 @@ class IndexNowController extends AbstractController
         }
 
         return array_values(array_unique($urls));
-    }
-
-    /**
-     * @param array<int, array<string, array{status: int|string, body: string}>> $responses
-     *
-     * @return array{successfulEngines: int, failedEngines: int, engines: array<int, array{
-     *     name: string,
-     *     status: string,
-     *     successfulBatches: int,
-     *     failedBatches: int,
-     *     totalBatches: int,
-     *     errors: array<int, string>
-     * }>}
-     */
-    private function createSubmissionSummary(array $responses): array
-    {
-        $engines = [];
-
-        foreach ($responses as $batchResponses) {
-            foreach ($batchResponses as $name => $response) {
-                if (!isset($engines[$name])) {
-                    $engines[$name] = [
-                        'name' => $name,
-                        'status' => 'success',
-                        'successfulBatches' => 0,
-                        'failedBatches' => 0,
-                        'totalBatches' => 0,
-                        'errors' => [],
-                    ];
-                }
-
-                $engines[$name]['totalBatches']++;
-                $status = $response['status'];
-                $isSuccessful = is_numeric($status) && (int) $status >= 200 && (int) $status < 300;
-
-                if ($isSuccessful) {
-                    $engines[$name]['successfulBatches']++;
-                    continue;
-                }
-
-                $engines[$name]['status'] = 'error';
-                $engines[$name]['failedBatches']++;
-
-                $error = trim($response['body']);
-                if ($error !== '' && !in_array($error, $engines[$name]['errors'], true)) {
-                    $engines[$name]['errors'][] = $error;
-                }
-            }
-        }
-
-        $engines = array_values($engines);
-        $successfulEngines = count(array_filter(
-            $engines,
-            static fn(array $engine): bool => $engine['status'] === 'success',
-        ));
-
-        return [
-            'successfulEngines' => $successfulEngines,
-            'failedEngines' => count($engines) - $successfulEngines,
-            'engines' => $engines,
-        ];
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Linderp\SuluIndexNowBundle\Tests\Controller;
 
 use Linderp\SuluIndexNowBundle\Controller\Admin\IndexNowController;
+use Linderp\SuluIndexNowBundle\Repository\IndexNowSubmissionRepository;
+use Linderp\SuluIndexNowBundle\Service\IndexNowRunRecorder;
 use Linderp\SuluIndexNowBundle\Service\IndexNowSubmitter;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -43,10 +45,14 @@ final class IndexNowControllerTest extends TestCase
             ->with('pages')
             ->willReturn($provider);
 
+        $repository = $this->createMock(IndexNowSubmissionRepository::class);
+
         $controller = new IndexNowController(
             'secret',
             new IndexNowSubmitter([], new MockHttpClient(), new NullLogger()),
             $pool,
+            new IndexNowRunRecorder($repository, new NullLogger()),
+            $repository,
         );
 
         $response = $controller->getUrls(Request::create('https://refashion.ch/admin/api/index-now/urls'));
