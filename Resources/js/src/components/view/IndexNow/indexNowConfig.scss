@@ -6,10 +6,28 @@
 
 .section {
     margin-bottom: 30px;
+}
 
-    & > *:first-child {
-        margin-bottom: 12px;
-    }
+.sectionTitle {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 4px;
+}
+
+.sectionDescription {
+    color: $doveGray;
+    font-size: 13px;
+    margin: 0 0 20px;
+}
+
+.stacked {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4;
+}
+
+.stackedMain {
+    display: block;
 }
 
 .alert {
@@ -19,7 +37,11 @@
     display: flex;
     gap: 16px;
     margin-bottom: 24px;
-    padding: 16px 20px;
+    padding: 14px 20px;
+}
+
+.alertAction {
+    flex-shrink: 0;
 }
 
 .alertError {
@@ -215,8 +237,8 @@
 
 .relative {
     color: $dustyGray;
+    display: block;
     font-size: 12px;
-    margin-top: 2px;
 }
 
 .loader {

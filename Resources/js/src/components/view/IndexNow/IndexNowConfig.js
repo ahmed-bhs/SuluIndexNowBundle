@@ -1,10 +1,11 @@
 import React, {Fragment} from "react";
 import {observer} from "mobx-react";
 import {action, computed, observable} from "mobx";
-import {Button, Heading, Icon, Loader, SingleSelect, Table} from "sulu-admin-bundle/components";
+import {Button, Icon, Loader, SingleSelect, Table} from "sulu-admin-bundle/components";
 import {withToolbar} from "sulu-admin-bundle/containers";
 import {translate} from "sulu-admin-bundle/utils";
 import {Requester} from "sulu-admin-bundle/services";
+import {userStore} from "sulu-admin-bundle/stores";
 import {SnackbarService} from "sulu-base-bundle";
 import indexNowConfigStyles from "./indexNowConfig.scss";
 
@@ -221,6 +222,10 @@ class IndexNowConfig extends React.Component {
         this.expandedRows = this.expandedRows.filter((id) => id !== rowId);
     };
 
+    get locale() {
+        return userStore.systemLocale || undefined;
+    }
+
     formatDate = (value) => {
         if (!value) {
             return null;
@@ -232,7 +237,7 @@ class IndexNowConfig extends React.Component {
             return value;
         }
 
-        return new Intl.DateTimeFormat(undefined, {
+        return new Intl.DateTimeFormat(this.locale, {
             dateStyle: "medium",
             timeStyle: "short",
         }).format(date);
@@ -257,12 +262,12 @@ class IndexNowConfig extends React.Component {
 
         for (const [unit, secondsInUnit] of units) {
             if (Math.abs(seconds) >= secondsInUnit) {
-                return new Intl.RelativeTimeFormat(undefined, {numeric: "auto"})
+                return new Intl.RelativeTimeFormat(this.locale, {numeric: "auto"})
                     .format(-Math.round(seconds / secondsInUnit), unit);
             }
         }
 
-        return new Intl.RelativeTimeFormat(undefined, {numeric: "auto"}).format(0, "minute");
+        return new Intl.RelativeTimeFormat(this.locale, {numeric: "auto"}).format(0, "minute");
     };
 
     formatDuration = (milliseconds) => {
@@ -373,14 +378,16 @@ class IndexNowConfig extends React.Component {
                         {translate("app.index_now_alert_hint")}
                     </div>
                 </div>
-                <Button
-                    disabled={this.busy}
-                    loading={this.submitting}
-                    onClick={this.indexNow}
-                    skin="primary"
-                >
-                    {translate("app.index_now_start")}
-                </Button>
+                <div className={indexNowConfigStyles.alertAction}>
+                    <Button
+                        disabled={this.busy}
+                        loading={this.submitting}
+                        onClick={this.indexNow}
+                        skin="primary"
+                    >
+                        {translate("app.index_now_start")}
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -535,16 +542,22 @@ class IndexNowConfig extends React.Component {
                     key={submission.id}
                 >
                     <Table.Cell>
-                        <div>{this.formatDate(submission.submittedAt)}</div>
-                        <div className={indexNowConfigStyles.relative}>
-                            {this.formatRelative(submission.submittedAt)}
+                        <div className={indexNowConfigStyles.stacked}>
+                            <span className={indexNowConfigStyles.stackedMain}>
+                                {this.formatDate(submission.submittedAt)}
+                            </span>
+                            <span className={indexNowConfigStyles.relative}>
+                                {this.formatRelative(submission.submittedAt)}
+                            </span>
                         </div>
                     </Table.Cell>
                     <Table.Cell>{this.renderTrigger(submission.trigger)}</Table.Cell>
                     <Table.Cell>{this.renderStatus(submission.status)}</Table.Cell>
                     <Table.Cell>
-                        <div>{submission.urlCount}</div>
-                        {duration && <div className={indexNowConfigStyles.relative}>{duration}</div>}
+                        <div className={indexNowConfigStyles.stacked}>
+                            <span className={indexNowConfigStyles.stackedMain}>{submission.urlCount}</span>
+                            {duration && <span className={indexNowConfigStyles.relative}>{duration}</span>}
+                        </div>
                     </Table.Cell>
                     <Table.Cell>{this.renderEngineDots(submission)}</Table.Cell>
                 </Table.Row>,
@@ -686,10 +699,12 @@ class IndexNowConfig extends React.Component {
                 </div>
 
                 <div className={indexNowConfigStyles.section}>
-                    <Heading
-                        description={translate("app.index_now_history_description")}
-                        label={translate("app.index_now_history_headline")}
-                    />
+                    <h2 className={indexNowConfigStyles.sectionTitle}>
+                        {translate("app.index_now_history_headline")}
+                    </h2>
+                    <p className={indexNowConfigStyles.sectionDescription}>
+                        {translate("app.index_now_history_description")}
+                    </p>
                     {this.renderFilters()}
                     {this.renderHistory()}
                 </div>
