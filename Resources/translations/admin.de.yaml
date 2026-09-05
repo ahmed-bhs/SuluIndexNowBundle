@@ -4,7 +4,6 @@ app:
     index_now_config_headline: IndexNow Dashboard
     index_now_submitted: '{count, plural, one {# URL wurde an IndexNow übermittelt.} other {# URLs wurden an IndexNow übermittelt.}}'
     index_now_partial: '{count} URLs übermittelt, {failed} Anbieter fehlgeschlagen.'
-    index_now_provider_status: '{successful} von {total} Anbietern erfolgreich.'
     index_now_submit_error: IndexNow konnte nicht gestartet werden.
     index_now_load_error: IndexNow Daten konnten nicht geladen werden.
     index_now_card_urls: URLs in der Sitemap
@@ -26,3 +25,18 @@ app:
     index_now_column_engines: Suchmaschinen
     index_now_never_hint: Noch keine Übermittlung aufgezeichnet
     index_now_history_description: Alle manuellen und automatischen Übermittlungen, neueste zuerst.
+    index_now_card_health: Erfolgsquote
+    index_now_health_detail: '{successful} von {total} Läufen erfolgreich'
+    index_now_average_duration: 'Durchschnittliche Dauer: {duration}'
+    index_now_duration_ms: '{duration} ms'
+    index_now_duration_s: '{duration} s'
+    index_now_alert_stale: 'Die letzte erfolgreiche Übermittlung war vor {days} Tagen.'
+    index_now_alert_never_succeeded: Bisher war keine Übermittlung erfolgreich.
+    index_now_alert_last_run_failed: Der letzte Lauf hat nicht alle Suchmaschinen erreicht.
+    index_now_alert_hint: Suchmaschinen kennen Ihre neuesten Änderungen möglicherweise nicht.
+    index_now_filter_all: Alle
+    index_now_result_count: '{count, plural, one {# Lauf} other {# Läufe}}'
+    index_now_previous: Zurück
+    index_now_next: Weiter
+    index_now_page_status: 'Seite {page} von {pages}'
+    index_now_batch_status: '{successful} von {total} Batches erfolgreich'

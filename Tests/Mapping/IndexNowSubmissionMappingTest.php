@@ -34,6 +34,7 @@ final class IndexNowSubmissionMappingTest extends TestCase
             'status',
             'successfulEngines',
             'failedEngines',
+            'durationMs',
             'engines',
         ], $metadata->getFieldNames());
     }
@@ -51,6 +52,13 @@ final class IndexNowSubmissionMappingTest extends TestCase
 
         self::assertSame('json', $metadata->getFieldMapping('engines')['type']);
         self::assertSame('datetime_immutable', $metadata->getFieldMapping('submittedAt')['type']);
+    }
+
+    public function testTheDurationIsOptionalSoRunsRecordedBeforeItStayValid(): void
+    {
+        $metadata = $this->loadMetadata();
+
+        self::assertTrue($metadata->getFieldMapping('durationMs')['nullable']);
     }
 
     private function loadMetadata(): \Doctrine\ORM\Mapping\ClassMetadata

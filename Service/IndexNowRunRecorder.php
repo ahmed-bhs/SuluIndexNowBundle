@@ -85,6 +85,7 @@ class IndexNowRunRecorder
         string $source,
         string $host,
         int $urlCount,
+        ?int $durationMs = null,
     ): ?IndexNowSubmission {
         if ([] === $summary['engines']) {
             return null;
@@ -98,6 +99,8 @@ class IndexNowRunRecorder
             $summary['successfulEngines'],
             $summary['failedEngines'],
             $summary['engines'],
+            null,
+            $durationMs,
         );
 
         try {

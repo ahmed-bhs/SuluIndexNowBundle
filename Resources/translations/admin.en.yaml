@@ -4,7 +4,6 @@ app:
     index_now_config_headline: IndexNow Dashboard
     index_now_submitted: '{count, plural, one {# URL submitted to IndexNow.} other {# URLs submitted to IndexNow.}}'
     index_now_partial: '{count} URLs submitted, {failed} providers failed.'
-    index_now_provider_status: '{successful} of {total} providers successful.'
     index_now_submit_error: IndexNow could not be started.
     index_now_load_error: IndexNow data could not be loaded.
     index_now_card_urls: URLs in sitemap
@@ -26,3 +25,18 @@ app:
     index_now_column_engines: Search engines
     index_now_never_hint: No submission recorded yet
     index_now_history_description: Every manual and automatic submission, most recent first.
+    index_now_card_health: Success rate
+    index_now_health_detail: '{successful} of {total} runs successful'
+    index_now_average_duration: 'Average duration: {duration}'
+    index_now_duration_ms: '{duration} ms'
+    index_now_duration_s: '{duration} s'
+    index_now_alert_stale: 'The last successful submission was {days} days ago.'
+    index_now_alert_never_succeeded: No submission has ever succeeded.
+    index_now_alert_last_run_failed: The last run did not reach every search engine.
+    index_now_alert_hint: Search engines may not know about your latest changes.
+    index_now_filter_all: All
+    index_now_result_count: '{count, plural, one {# run} other {# runs}}'
+    index_now_previous: Previous
+    index_now_next: Next
+    index_now_page_status: 'Page {page} of {pages}'
+    index_now_batch_status: '{successful} of {total} batches successful'

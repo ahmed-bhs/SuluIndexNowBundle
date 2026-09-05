@@ -25,6 +25,7 @@
         <field name="status" type="string" column="status" length="16" nullable="false"/>
         <field name="successfulEngines" type="integer" column="successfulEngines" nullable="false"/>
         <field name="failedEngines" type="integer" column="failedEngines" nullable="false"/>
+        <field name="durationMs" type="integer" column="durationMs" nullable="true"/>
         <field name="engines" type="json" column="engines" nullable="false"/>
     </entity>
 </doctrine-mapping>

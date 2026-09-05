@@ -31,6 +31,8 @@ class IndexNowSubmission
 
     private int $failedEngines;
 
+    private ?int $durationMs = null;
+
     /** @var array<int, array<string, mixed>> */
     private array $engines = [];
 
@@ -46,6 +48,7 @@ class IndexNowSubmission
         int $successfulEngines,
         int $failedEngines,
         array $engines,
+        ?int $durationMs,
     ) {
         $this->submittedAt = $submittedAt;
         $this->trigger = $trigger;
@@ -55,6 +58,7 @@ class IndexNowSubmission
         $this->successfulEngines = $successfulEngines;
         $this->failedEngines = $failedEngines;
         $this->engines = $engines;
+        $this->durationMs = $durationMs;
         $this->status = self::resolveStatus($successfulEngines, $failedEngines);
     }
 
@@ -70,6 +74,7 @@ class IndexNowSubmission
         int $failedEngines,
         array $engines,
         ?\DateTimeImmutable $submittedAt = null,
+        ?int $durationMs = null,
     ): self {
         return new self(
             $submittedAt ?? new \DateTimeImmutable(),
@@ -80,6 +85,7 @@ class IndexNowSubmission
             $successfulEngines,
             $failedEngines,
             $engines,
+            $durationMs,
         );
     }
 
@@ -137,6 +143,11 @@ class IndexNowSubmission
         return $this->failedEngines;
     }
 
+    public function getDurationMs(): ?int
+    {
+        return $this->durationMs;
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -165,6 +176,7 @@ class IndexNowSubmission
             'status' => $this->status,
             'successfulEngines' => $this->successfulEngines,
             'failedEngines' => $this->failedEngines,
+            'durationMs' => $this->durationMs,
             'engines' => $this->engines,
         ];
     }

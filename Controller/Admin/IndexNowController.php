@@ -18,6 +18,7 @@ class IndexNowController extends AbstractController
 {
     private const SUBMIT_BATCH_SIZE = 1000;
     private const HISTORY_LIMIT = 20;
+    private const STATISTICS_LIMIT = 20;
 
     public function __construct(
         #[Autowire('%sulu_index_now.key%')]
@@ -36,6 +37,7 @@ class IndexNowController extends AbstractController
         $batches = array_chunk($urls, self::SUBMIT_BATCH_SIZE);
         $responses = [];
         $submitted = 0;
+        $startedAt = microtime(true);
         foreach ($batches as $index => $batch) {
             $responses[$index] = $this->submitter->submit(
                 $host,
@@ -44,6 +46,7 @@ class IndexNowController extends AbstractController
             );
             $submitted += count($batch);
         }
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
 
         $summary = $this->recorder->createSummary($responses);
         $submission = $this->recorder->record(
@@ -52,6 +55,7 @@ class IndexNowController extends AbstractController
             'admin',
             $host,
             $submitted,
+            $durationMs,
         );
 
         return new JsonResponse([
@@ -62,10 +66,11 @@ class IndexNowController extends AbstractController
             "batchCount" => count($batches),
             "submittedAt" => ($submission?->getSubmittedAt() ?? new \DateTimeImmutable())->format(\DATE_ATOM),
             "summary" => $summary,
+            "durationMs" => $durationMs,
             "lastRun" => $this->findLastRun($host),
             "lastSuccess" => $this->findLastSuccess($host),
-            "history" => $this->findHistory($host),
-        ]);
+            "statistics" => $this->submissionRepository->findStatistics($host, self::STATISTICS_LIMIT),
+        ] + $this->buildHistoryPayload($host, 1, self::HISTORY_LIMIT, []));
     }
 
     #[Route(path: '/admin/api/index-now/urls', name: 'app.index-now.urls', methods: ['GET'])]
@@ -83,8 +88,42 @@ class IndexNowController extends AbstractController
         return new JsonResponse([
             "lastRun" => $this->findLastRun($host),
             "lastSuccess" => $this->findLastSuccess($host),
-            "history" => $this->findHistory($host),
-        ]);
+            "statistics" => $this->submissionRepository->findStatistics($host, self::STATISTICS_LIMIT),
+        ] + $this->buildHistoryPayload(
+            $host,
+            $request->query->getInt('page', 1),
+            $request->query->getInt('limit', self::HISTORY_LIMIT),
+            [
+                'status' => $request->query->getString('status'),
+                'trigger' => $request->query->getString('trigger'),
+            ],
+        ));
+    }
+
+    /**
+     * @param array{status?: string|null, trigger?: string|null} $filters
+     *
+     * @return array{history: array<int, array<string, mixed>>, pagination: array{page: int, limit: int, total: int, pages: int}}
+     */
+    private function buildHistoryPayload(string $host, int $page, int $limit, array $filters): array
+    {
+        $page = max(1, $page);
+        $limit = max(1, min(100, $limit));
+
+        $result = $this->submissionRepository->findPage($host, $page, $limit, $filters);
+
+        return [
+            'history' => array_map(
+                static fn(IndexNowSubmission $submission): array => $submission->toArray(),
+                $result['items'],
+            ),
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $result['total'],
+                'pages' => (int) ceil($result['total'] / $limit),
+            ],
+        ];
     }
 
     /**
@@ -101,17 +140,6 @@ class IndexNowController extends AbstractController
     private function findLastSuccess(string $host): ?array
     {
         return $this->submissionRepository->findLastSuccessful($host)?->toArray();
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function findHistory(string $host): array
-    {
-        return array_map(
-            static fn(IndexNowSubmission $submission): array => $submission->toArray(),
-            $this->submissionRepository->findHistory($host, self::HISTORY_LIMIT),
-        );
     }
 
     /**

@@ -76,6 +76,24 @@ final class IndexNowRunRecorderTest extends TestCase
         self::assertTrue($submission->isSuccessful());
     }
 
+    public function testItKeepsTrackOfHowLongTheRunTook(): void
+    {
+        $repository = $this->createMock(IndexNowSubmissionRepository::class);
+        $recorder = new IndexNowRunRecorder($repository, new NullLogger());
+        $summary = $recorder->createSummary([['Bing' => ['status' => 200, 'body' => '']]]);
+
+        $submission = $recorder->record(
+            $summary,
+            IndexNowSubmission::TRIGGER_MANUAL,
+            'admin',
+            'example.com',
+            5,
+            2400,
+        );
+
+        self::assertSame(2400, $submission->getDurationMs());
+    }
+
     public function testItStoresNothingWhenNoEngineWasContacted(): void
     {
         $repository = $this->createMock(IndexNowSubmissionRepository::class);

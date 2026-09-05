@@ -122,6 +122,7 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
         foreach ($pendingSubmissions as $submission) {
             $urls = array_values(array_unique($submission['urls']));
             $responses = [];
+            $startedAt = microtime(true);
 
             foreach (array_chunk($urls, self::SUBMIT_BATCH_SIZE) as $index => $batch) {
                 $responses[$index] = $this->submitter->submit(
@@ -137,6 +138,7 @@ class PersistPageEventSubscriber implements EventSubscriberInterface
                 implode(',', array_keys($submission['sources'])),
                 $submission['host'],
                 count($urls),
+                (int) round((microtime(true) - $startedAt) * 1000),
             );
         }
     }

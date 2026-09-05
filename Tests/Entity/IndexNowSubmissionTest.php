@@ -56,6 +56,12 @@ final class IndexNowSubmissionTest extends TestCase
         self::assertSame(IndexNowSubmission::STATUS_SUCCESS, $data['status']);
     }
 
+    public function testARunRecordedWithoutADurationExposesNone(): void
+    {
+        self::assertNull($this->createSubmission(1, 0)->getDurationMs());
+        self::assertArrayHasKey('durationMs', $this->createSubmission(1, 0)->toArray());
+    }
+
     private function createSubmission(int $successfulEngines, int $failedEngines): IndexNowSubmission
     {
         return IndexNowSubmission::create(
